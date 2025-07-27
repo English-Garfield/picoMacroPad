@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pico RGB Keypad Interactive Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            margin-bottom: 30px;
+            color: #a8a8a8;
+            font-size: 18px;
+        }
+
+        .keypad-container {
+            background: linear-gradient(145deg, #2a2a3e, #1e1e2e);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                20px 20px 40px rgba(0,0,0,0.4),
+                -10px -10px 20px rgba(255,255,255,0.05);
+            margin-bottom: 30px;
+            border: 2px solid #333;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .key {
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 12px;
+            background: #2c2c3e;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            box-shadow: 
+                inset 3px 3px 8px rgba(0,0,0,0.4),
+                inset -3px -3px 8px rgba(255,255,255,0.1),
+                0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+            padding: 5px;
+        }
+
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                inset 3px 3px 8px rgba(0,0,0,0.4),
+                inset -3px -3px 8px rgba(255,255,255,0.1),
+                0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .key:active, .key.pressed {
+            transform: translateY(1px);
+            box-shadow: 
+                inset 5px 5px 10px rgba(0,0,0,0.6),
+                inset -2px -2px 4px rgba(255,255,255,0.05);
+        }
+
+        .key.layer-key {
+            background: #ff1493;
+            box-shadow: 
+                inset 3px 3px 8px rgba(255,20,147,0.3),
+                inset -3px -3px 8px rgba(0,0,0,0.4),
+                0 4px 8px rgba(255,20,147,0.3);
+        }
+
+        .key.active-layer {
+            background: #ff69b4;
+            box-shadow: 
+                inset 3px 3px 8px rgba(255,105,180,0.4),
+                inset -3px -3px 8px rgba(0,0,0,0.3),
+                0 0 15px rgba(255,105,180,0.5);
+        }
+
+        .info-panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .layer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .current-layer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .key-functions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            text-align: left;
+        }
+
+        .function-group {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .function-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ff6b6b;
+        }
+
+        .function-item {
+            font-size: 12px;
+            margin-bottom: 3px;
+            color: #ccc;
+        }
+
+        .output-log {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-timestamp {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .log-action {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .keypad {
+                max-width: 300px;
+            }
+            
+            .key {
+                width: 60px;
+                height: 60px;
+                font-size: 10px;
+            }
+            
+            .key-functions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pico RGB Keypad Demo</h1>
+        <p class="subtitle">Interactive simulation of the Pimoroni Pico RGB Keypad Base</p>
+        
+        <div class="keypad-container">
+            <div class="keypad" id="keypad">
+                <!-- Keys will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="layer-info">
+                <span class="current-layer">Current Layer: <span id="current-layer">OBS/ATEM Control</span></span>
+                <span>Keys 0-3: Layer Selection</span>
+            </div>
+            
+            <div class="key-functions" id="key-functions">
+                <!-- Function descriptions will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3 style="margin-bottom: 10px;">Output Log</h3>
+            <div class="output-log" id="output-log">
+                <div class="log-entry">
+                    <span class="log-timestamp">[System]</span> Pico RGB Keypad initialized - 16 keys ready
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>Instructions</h3>
+            <p>• Click keys 0-3 to switch between different function layers</p>
+            <p>• Each layer has different colored keys representing various functions</p>
+            <p>• Function keys will simulate their keyboard shortcuts in the output log</p>
+            <p>• This demo replicates the functionality from the original MicroPython code</p>
+        </div>
+    </div>
+
+    <script>
+        class PicoMacroPad {
+            constructor() {
+                this.currentLayer = 0;
+                this.keys = [];
+                this.outputLog = document.getElementById('output-log');
+                
+                // Define the layers and their configurations based on the original code
+                this.layers = {
+                    0: {
+                        name: "OBS/ATEM Control",
+                        keys: {
+                            4: { label: "Open\nATEM+OBS", action: "Ctrl+Shift+S", color: "#8A2BE2", description: "Open ATEM + OBS" },
+                            8: { label: "Open\nATEM", action: "Ctrl+Shift+A", color: "#FF0000", description: "Open ATEM" },
+                            12: { label: "Open\nOBS", action: "Ctrl+Shift+O", color: "#0000FF", description: "Open OBS" },
+                            13: { label: "Start\nRec", action: "Shift+Cmd+R", color: "#00FF00", description: "Start recording" },
+                            14: { label: "Stop\nRec", action: "Alt+Shift+R", color: "#FF0000", description: "Stop recording" }
+                        }
+                    },
+                    1: {
+                        name: "Applications",
+                        keys: {
+                            4: { label: "Open\nFirefox", action: "Shift+Cmd+F", color: "#8A2BE2", description: "Open Firefox" },
+                            12: { label: "Open\nPyCharm", action: "Shift+Cmd+P", color: "#FFFF00", description: "Open PyCharm" },
+                            13: { label: "Open\nThonny", action: "Shift+Cmd+T", color: "#0000FF", description: "Open Thonny" },
+                            14: { label: "Open\nMu", action: "Shift+Cmd+M", color: "#FFA500", description: "Open Mu editor" }
+                        }
+                    },
+                    2: {
+                        name: "Music Control",
+                        keys: {
+                            4: { label: "Open\nMusic", action: "Ctrl+Shift+M", color: "#8A2BE2", description: "Open music" },
+                            6: { label: "Next\nSong", action: "Ctrl+Shift+F", color: "#0000FF", description: "Next song" },
+                            7: { label: "Play\nMusic", action: "Ctrl+Shift+V", color: "#00FF00", description: "Play music" },
+                            8: { label: "Special\n1", action: "Alt+Shift+I", color: "#FF1493", description: "Special function 1" },
+                            9: { label: "Special\n2", action: "Ctrl+Shift+B", color: "#00FF00", description: "Special function 2" },
+                            10: { label: "Prev\nSong", action: "Alt+Shift+F", color: "#0000FF", description: "Previous song" },
+                            11: { label: "Pause\nMusic", action: "Ctrl+Shift+W", color: "#FF0000", description: "Pause music" },
+                            12: { label: "Switch\nTab", action: "Ctrl+Shift+Tab", color: "#0000FF", description: "Switch tab" },
+                            14: { label: "Vol\nUp", action: "Cmd+Up", color: "#FF0000", description: "Volume up" },
+                            15: { label: "Vol\nDown", action: "Cmd+Down", color: "#00FF00", description: "Volume down" }
+                        }
+                    },
+                    3: {
+                        name: "Custom Layer",
+                        keys: {
+                            // Layer 3 is currently unassigned in the original code
+                        }
+                    }
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.createKeypad();
+                this.updateLayerDisplay();
+            }
+
+            createKeypad() {
+                const keypad = document.getElementById('keypad');
+                keypad.innerHTML = '';
+
+                for (let i = 0; i < 16; i++) {
+                    const key = document.createElement('button');
+                    key.className = 'key';
+                    key.id = `key-${i}`;
+                    key.dataset.keyIndex = i;
+                    
+                    // Layer selection keys (0-3)
+                    if (i < 4) {
+                        key.classList.add('layer-key');
+                        key.textContent = `Layer\n${i}`;
+                        if (i === this.currentLayer) {
+                            key.classList.add('active-layer');
+                        }
+                    }
+                    
+                    key.addEventListener('click', () => this.handleKeyPress(i));
+                    keypad.appendChild(key);
+                    this.keys.push(key);
+                }
+
+                this.updateKeyDisplay();
+            }
+
+            handleKeyPress(keyIndex) {
+                const key = this.keys[keyIndex];
+                
+                // Visual feedback
+                key.classList.add('pressed');
+                setTimeout(() => key.classList.remove('pressed'), 150);
+
+                // Layer selection (keys 0-3)
+                if (keyIndex < 4) {
+                    this.switchLayer(keyIndex);
+                    return;
+                }
+
+                // Function key press
+                const layerConfig = this.layers[this.currentLayer];
+                if (layerConfig.keys[keyIndex]) {
+                    const keyConfig = layerConfig.keys[keyIndex];
+                    this.executeKeyFunction(keyIndex, keyConfig);
+                } else {
+                    this.logOutput(`Key ${keyIndex}: Not assigned in current layer`);
+                }
+            }
+
+            switchLayer(layerIndex) {
+                this.currentLayer = layerIndex;
+                
+                // Update layer key appearances
+                for (let i = 0; i < 4; i++) {
+                    const key = this.keys[i];
+                    if (i === layerIndex) {
+                        key.classList.add('active-layer');
+                    } else {
+                        key.classList.remove('active-layer');
+                    }
+                }
+
+                this.updateLayerDisplay();
+                this.updateKeyDisplay();
+                this.logOutput(`Switched to Layer ${layerIndex}: ${this.layers[layerIndex].name}`);
+            }
+
+            executeKeyFunction(keyIndex, keyConfig) {
+                // Simulate the key press with color animation
+                const key = this.keys[keyIndex];
+                const originalBg = key.style.backgroundColor;
+                
+                key.style.backgroundColor = keyConfig.color;
+                key.style.boxShadow = `0 0 20px ${keyConfig.color}`;
+                
+                setTimeout(() => {
+                    key.style.backgroundColor = originalBg;
+                    key.style.boxShadow = '';
+                }, 300);
+
+                this.logOutput(`Key ${keyIndex}: ${keyConfig.action} - ${keyConfig.description}`);
+            }
+
+            updateKeyDisplay() {
+                const layerConfig = this.layers[this.currentLayer];
+                
+                // Reset all non-layer keys
+                for (let i = 4; i < 16; i++) {
+                    const key = this.keys[i];
+                    const keyConfig = layerConfig.keys[i];
+                    
+                    if (keyConfig) {
+                        key.textContent = keyConfig.label;
+                        key.style.backgroundColor = keyConfig.color;
+                        key.style.opacity = '1';
+                        key.style.cursor = 'pointer';
+                    } else {
+                        key.textContent = `${i}`;
+                        key.style.backgroundColor = '#2c2c3e';
+                        key.style.opacity = '0.5';
+                        key.style.cursor = 'default';
+                    }
+                }
+            }
+
+            updateLayerDisplay() {
+                document.getElementById('current-layer').textContent = this.layers[this.currentLayer].name;
+                
+                const functionsContainer = document.getElementById('key-functions');
+                functionsContainer.innerHTML = '';
+
+                const layerConfig = this.layers[this.currentLayer];
+                const functions = layerConfig.keys;
+
+                if (Object.keys(functions).length === 0) {
+                    functionsContainer.innerHTML = '<div class="function-group"><div class="function-title">No functions assigned</div><div class="function-item">This layer is currently unassigned</div></div>';
+                    return;
+                }
+
+                Object.entries(functions).forEach(([keyIndex, config]) => {
+                    const functionGroup = document.createElement('div');
+                    functionGroup.className = 'function-group';
+                    functionGroup.style.borderLeftColor = config.color;
+                    
+                    functionGroup.innerHTML = `
+                        <div class="function-title">Key ${keyIndex}</div>
+                        <div class="function-item">${config.description}</div>
+                        <div class="function-item" style="color: ${config.color};">${config.action}</div>
+                    `;
+                    
+                    functionsContainer.appendChild(functionGroup);
+                });
+            }
+
+            logOutput(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> <span class="log-action">${message}</span>`;
+                
+                this.outputLog.appendChild(logEntry);
+                this.outputLog.scrollTop = this.outputLog.scrollHeight;
+
+                // Keep log manageable
+                if (this.outputLog.children.length > 50) {
+                    this.outputLog.removeChild(this.outputLog.firstChild);
+                }
+            }
+        }
+
+        // Initialize the macropad when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PicoMacroPad();
+        });
+
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            // Map number keys 1-4 to layer switches (0-3)
+            if (e.key >= '1' && e.key <= '4') {
+                const layerIndex = parseInt(e.key) - 1;
+                document.getElementById(`key-${layerIndex}`).click();
+            }
+        });
+    </script>
+</body>
+</html>
