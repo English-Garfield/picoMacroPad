@@ -21,22 +21,10 @@ The Pimoroni Pico RGB Keypad Base handles all connections internally when you pl
 - APA102 LEDs: Data and clock lines connected to SPI pins
 - All pull-up resistors included on-board
 
-**GPIO Usage:**
-```
-Pico Pin → Function
-GP0-GP3  → Key matrix rows
-GP4-GP7  → Key matrix columns  
-GP17     → Chip Select (CS)
-GP18     → APA102 Data (SPI0 TX)
-GP19     → APA102 Clock (SPI0 SCK)
-GP5      → I2C SCL
-GP4      → I2C SDA
-```
-
 
 ### Install MicroPython
 
-This project uses CircuitPython with the following libraries:
+This project uses MicroPython with the following libraries:
 - adafruit_bus_device
 - adafruit_dotstar
 - adafruit_hid
@@ -44,8 +32,6 @@ This project uses CircuitPython with the following libraries:
 
 
 ## Assembly Instructions
-
-**It's incredibly simple**
 
 1.**Connect to base**:
    - Simply plug the Pico directly into the keypad base
