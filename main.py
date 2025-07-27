@@ -165,9 +165,6 @@ button_set[41] = ["Keycode.CONTROL,Keycode.SHIFT,Keycode.B", 0, 0, _green]
 # ---- 4th - UNASSIGNED ---- 52 - 63
 
 
-# setup some end of meeting phrases used if the button set has "_random_" as its text
-messages = ['thanks for a great meeting', 'great meeting, thanks', 'thank you, bye', 'thanks', '---bye---']
-
 # ---- Variable setup ---- #
 held = [0] * 16  # setup
 latch = [0] * 16  # setup
